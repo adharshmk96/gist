@@ -1,0 +1,55 @@
+services:
+  web:
+    image: "django-server"
+    build: .
+    container_name: django-server
+    command: gunicorn django_application.wsgi:application -b 0.0.0.0:8000
+    volumes:
+      - ./db.sqlite3:/code/db.sqlite3
+      - ./debug.log:/code/debug.log
+    ports:
+      - 8000:8000
+
+  celery-beat:
+    image: "django-server"
+    build: .
+    command: celery -A django_application beat --loglevel=info --logfile=/code/celery-beat-logs.log
+    volumes:
+      - ./db.sqlite3:/code/db.sqlite3
+      - ./celery-beat-logs.log:/code/celery-beat-logs.log
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+  
+  celery-worker:
+    image: "django-server"
+    build: .
+    command: celery -A django_application worker --loglevel=info --logfile=/code/celery-worker-logs.log
+    volumes:
+      - ./db.sqlite3:/code/db.sqlite3
+      - ./celery-worker-logs.log:/code/celery-worker-logs.log
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+
+  celery-flower:
+    image: "django-server"
+    build: .
+    command: celery -A django_application flower
+    volumes:
+      - ./db.sqlite3:/code/db.sqlite3
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    ports:
+      - 5555:5555
+    depends_on:
+      - celery-worker
+      - redis
+
+  redis:
+    image: "redis:alpine"

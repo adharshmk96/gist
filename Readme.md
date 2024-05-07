@@ -1,3 +1,5 @@
-# Bash Scripts
+# Gist
 
-just a gist of bash scripts for various use cases.
+my gist collection in a git repo.
+
+not a fan of github gist.
