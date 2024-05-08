@@ -9,7 +9,7 @@ services:
       - 9090:9090
     volumes:
       - prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
+      - ./prometheus:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -22,7 +22,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - grafana-data:/var/lib/grafana
+      - ./grafana:/var/lib/grafana
 
   loki:
     image: "grafana/loki:latest"
@@ -36,7 +36,8 @@ services:
 #    volumes:
 #    configure volume for log file here
 
-volumes:
-  grafana-data:
-  prometheus-data:
-  loki-data:
+#    if faced with volume issues, do : 
+#
+#    sudo chgrp -R nogroup
+#    or add user: root
+#
